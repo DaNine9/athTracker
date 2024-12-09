@@ -172,12 +172,26 @@ app.get("/class", isAuth, (req,res) => {
         })
     }
 })
+
 //prueba
 app.get("/prueba", isAuth, (req,res) => {
 
     var id = req.query.id
+
 })
 
+app.get("/getMasterPruebas", isAuth, (req,res) => {
+    var query = "SELECT * FROM pruebasMaster;"
+    db.all(query, (err,data) => {
+        if(err){
+            console.log("error al coger pruebasMaster")
+        }
+
+        if(data){
+            res.json(data);
+        }
+    })
+})
 
 //crear nueva clase
 app.post("/newClass", isAuth,(req, res) => {
