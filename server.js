@@ -15,7 +15,6 @@ var classcode="";
 var classname="";
 var idAlumno="";
 
-
 //cambio
 
 //public
@@ -71,20 +70,6 @@ function checkCodigos(code){
     })
 }
 
-
-//ALERTA, ESTA FUNCIÓN NO ESTA VERIFICADA, NUNCA SE HA USADO
-//Obtener el nombre de alguien segun su userId, es un API, lo devuelve completo y sin filtrar
-function getName(id){
-    var query = `SELECT name FROM users WHERE id = ${id};`
-    db.get(query, (err, data) => {
-        if(err){
-            res.send("sql error")
-        }else{
-            return data
-        }
-    })
-}
-
 //middleware autentificacion
 function isAuth(req, res, next){
     if(req.session.userId){
@@ -94,6 +79,9 @@ function isAuth(req, res, next){
     }
 }
 
+app.get("/getName", isAuth , (req, res) => {
+    res.json({"name":req.session.username})
+})
 
 app.get("/", (req, res) => {
     if (req.session.userId) {
@@ -116,6 +104,15 @@ app.get("/alumno", isAuth, (req,res) => {
 
     res.sendFile(path.join(__dirname, "views/detailAlumnoT.html"))
 
+
+})
+
+app.get("/detalleAlumno", isAuth, (req, res) => {
+
+    const idClase = req.query.idClase
+    const idAlumno = req.query.idAlumno
+
+    res.render("detalleAlumno", {"idClase":idClase, "idAlumno":idAlumno})
 
 })
 
@@ -164,12 +161,9 @@ app.get("/class", isAuth, (req,res) => {
     console.log(code);
 
     if(req.session.isTeacher == 1){
-        res.sendFile(path.join(__dirname, "views/classTeacher.html"));
+        res.render("classTeacher", {"idClase":code});
     }else{
-        //res.sendFile(path.join(__dirname, "views/detailAlumno.html"));
-        res.render("detailAlumno", {
-            nombre:classname
-        })
+        res.sendFile(path.join(__dirname, "views/detailAlumno.html"));   
     }
 })
 
@@ -271,6 +265,24 @@ app.get("/getClassData", isAuth,(req,res) => {
             
         })
 
+})
+
+app.get("/dataAlumno", isAuth, (req,res) => {
+    var idAlumno = req.body.idAlumno
+    var idClase = req.body.idClase
+
+    var query = `SELECT * FROM resultados WHERE idAlumno = ${idAlumno} AND idClase = ${idClase} order by createdOn desc;`
+    db.all(query, (err, data) => {
+        if(err){
+            console.log("error al consultar los resultados")
+        }
+        
+        if(data){
+            res.json(data)
+        }else{
+            res.send("no hay datos")
+        }
+    })
 })
 
 app.post("/newUser", (req,res) =>{
