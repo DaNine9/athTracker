@@ -59,6 +59,21 @@ function crearCodigo(){
     return codigo
 }
 
+//funcion de conprobacion para el registro
+function checkEmptyFields(username, password, isTeacher, fname) {
+    if (!username) {
+        return "Por favor, rellena el nombre de usuario";
+    } else if (!password) {
+        return "Por favor, añade una contraseña";
+    } else if (isTeacher === undefined || isTeacher === null) { // Check for undefined or null
+        return "Por favor, indica tu función (alumno / profesor)";
+    } else if (!fname) {
+        return "Por favor, rellena tu nombre completo";
+    } else {
+        return null; // All fields are filled
+    }
+}
+
 function checkCodigos(code){
     var query = "SELECT code FROM clases WHERE code = \""+ code + "\";"
     db.all(query, (err, data) => {
@@ -127,6 +142,7 @@ app.get("/alumno", isAuth, (req,res) => {
 
 })
 
+//detalle del alumno, pagina con lista de pruebas
 app.get("/detalleAlumno", isAuth, (req, res) => {
 
     const idClase = req.query.idClase
@@ -135,31 +151,42 @@ app.get("/detalleAlumno", isAuth, (req, res) => {
     var Fname = "Fname";
     if (req.session.isTeacher === 1) {
 
-    var query = `SELECT name FROM users WHERE id = ${idAlumno}`
-    db.get(query, (err, data) =>{
-        if(data){
-            Fname = data
-            var Pname = Fname.name
-            console.log(Pname)
-            res.render("detalleAlumno", {"idClase":idClase, "idAlumno":idAlumno, "name":Pname, "pruebasDisplay":"Pruebas del alumno:"})
-        }
-        if(err){
-            console.log(err)
-        }
-    })
+        var query = `SELECT name FROM users WHERE id = ?`;
+        db.get(query, [idAlumno], (err, data) => {
+            if (data) {
+                Fname = data;
+                var Pname = Fname.name;
+                console.log(Pname);
+                res.render("detalleAlumno", {
+                    "idClase": idClase,
+                    "idAlumno": idAlumno,
+                    "name": Pname,
+                    "pruebasDisplay": "Pruebas del alumno"
+                });
+            }
+            if (err) {
+                console.log(err);
+            }
+        });
+        
 
     } else if (req.session.isTeacher === 0) {
 
-        const query = `SELECT name FROM classes WHERE code = "${idClase}"` 
-        db.get(query, (err, data) => {
-            if (data){
-                console.log("data:", data)
-                Fname = data
-                var Pname = Fname.name
-                console.log("Pname:",Pname)
-                res.render("detalleAlumno", {"idClase":idClase, "idAlumno":idAlumno, "name":Pname, "pruebasDisplay":"Mis Pruebas:"})
+        const query = `SELECT name FROM classes WHERE code = ?`;
+        db.get(query, [idClase], (err, data) => {
+            if (data) {
+                console.log("data:", data);
+                Fname = data;
+                var Pname = Fname.name;
+                console.log("Pname:", Pname);
+                res.render("detalleAlumno", {
+                    "idClase": idClase, 
+                    "idAlumno": idAlumno, 
+                    "name": Pname, 
+                    "pruebasDisplay": "Mis Pruebas"
+                });
             }
-        })
+});
 
 
     } else {
@@ -274,28 +301,27 @@ app.get("/getClasses", isAuth,(req, res) => {
 
     //si es 1 profesor
     if(req.session.isTeacher == 1){
-        var query = `SELECT * FROM classes WHERE teacherId = "${req.session.userId}";`
-        console.log(query)
-        db.all(query, (error, data) => {
-            if(error){
-                res.send("fallo")
+        var query = `SELECT * FROM classes WHERE teacherId = ?;`;
+        console.log(query);
+        db.all(query, [req.session.userId], (error, data) => {
+            if (error) {
+                res.send("fallo");
             }
 
-            res.json(data)
-            
-        })
+            res.json(data);
+        });
+
     //si es 0 es alumno
     }else if(req.session.isTeacher == 0){
 
-        const query = `SELECT c.*, u.name AS teacherName FROM classes c JOIN enrollments e ON c.id = e.classId JOIN users u ON c.teacherId = u.id WHERE e.studentId = ?;
-`;
-db.all(query, [req.session.userId], (error, data) => {
-    if (error) {
-        console.error("Error fetching data:", error);
-        res.status(500).send("An error occurred while fetching data.");
-    } else {
-        res.json(data);
-    }
+        const query = `SELECT c.*, u.name AS teacherName FROM classes c JOIN enrollments e ON c.id = e.classId JOIN users u ON c.teacherId = u.id WHERE e.studentId = ?;`;
+        db.all(query, [req.session.userId], (error, data) => {
+            if (error) {
+                console.error("Error fetching data:", error);
+                res.status(500).send("An error occurred while fetching data.");
+            } else {
+                res.json(data);
+            }
 });
 
 
@@ -305,16 +331,16 @@ db.all(query, [req.session.userId], (error, data) => {
 })
 
 app.get("/getClassData", isAuth,(req,res) => {
-    var query = `SELECT u.id as "UID", u.name as "FNAME", c.name as "CLASSNAME", c.code as "CLASSCODE" FROM enrollments INNER JOIN classes as c on classId = c.id INNER JOIN users as u on studentId = u.id WHERE code = "${classcode}";`
-        console.log(query)
-        db.all(query, (error, data) => {
-            if(error){
-                res.send("fallo")
-            }
-            classname = data.CLASSNAME;
-            res.json(data)
-            
-        })
+    var query = `SELECT u.id as "UID", u.name as "FNAME", c.name as "CLASSNAME", c.code as "CLASSCODE"  FROM enrollments  INNER JOIN classes as c on classId = c.id  INNER JOIN users as u on studentId = u.id  WHERE code = ?;`;
+    console.log(query);
+    db.all(query, [classcode], (error, data) => {
+        if (error) {
+            res.send("fallo");
+        }
+        classname = data.CLASSNAME;
+        res.json(data);
+});
+
 
 })
 
@@ -325,42 +351,51 @@ app.get("/dataAlumno", (req,res) => {
     var idClase = req.query.idClase
 
 
-    var query = `SELECT * FROM resultados WHERE idAlumno = ${idAlumno} AND idClase = "${idClase}" order by createdOn desc;`
-    console.log(query)
-    db.all(query, (err, data) => {
-        if(err){
-            console.log("error al consultar los resultados:", err)
+    var query = `SELECT * FROM resultados WHERE idAlumno = ? AND idClase = ? ORDER BY createdOn DESC;`;
+    console.log(query);
+    db.all(query, [idAlumno, idClase], (err, data) => {
+        if (err) {
+            console.log("error al consultar los resultados:", err);
         }
-        
-        if(data){
-            console.log(data)
-        }else{
-            res.status(500)
+
+        if (data) {
+            console.log(data);
+        } else {
+            res.status(500);
         }
-    })
+    });
+
 })
 
 app.post("/newUser", (req,res) =>{
 
     var username = req.body.user;
     var password = req.body.password;
-    var center = req.body.center;
     var isTeacher = req.body.isTeacher;
     var fname = req.body.fname;
+
+    if(checkEmptyFields(username, password, isTeacher, fname) == null){
+        
+        var query = `INSERT INTO users (username, password, isTeacher, name) VALUES ("${username}", "${password}", ${isTeacher}, "${fname}");`
+        
+        console.log(query);
+        
+        db.get(query, (err, data) => {
+            if (err){
+                res.send("fallo")
+                console.log(err);
+            }else{
+                console.log("user añadido correctamente");
+                res.redirect("/");
+            }
+        });
+
+    }else{
+        res.send("<h1 style='font-size:100px;'>" + checkEmptyFields(username, password, isTeacher, fname) + "</h1>");
+    }
+
     
-    var query = `INSERT INTO users (username, password, center, isTeacher, name) VALUES ("${username}", "${password}", "${center}", ${isTeacher}, "${fname}");`
     
-    console.log(query);
-    
-    db.get(query, (err, data) => {
-        if (err){
-            res.send("fallo")
-            console.log(err);
-        }else{
-            console.log("user añadido correctamente");
-            res.redirect("/");
-        }
-    });
 });
 
 app.get("/getUserData", (req,res) =>{
@@ -377,22 +412,6 @@ app.get("/getUserData", (req,res) =>{
 
 })
 
-app.get("/getCenterData", (req,res) =>{
-    var query = `SELECT centers.* 
-    FROM users
-    JOIN centers ON users.center = centers.code
-    WHERE users.username = "${req.session.username}";`
-    console.log(query);
-    db.all(query, (err, data) => {
-        console.log(data);
-        if (data){
-            res.json(data);
-        }else{
-            console.log(err)
-        }
-    });
-
-})
 
 app.get("/logout", (req,res) =>{
     req.session.destroy();
@@ -408,11 +427,9 @@ app.post("/login", (req,res) =>{
         console.log(user);
         if (user){
             req.session.username = user.username
-            req.session.center = user.center
             req.session.fname = user.fname
             req.session.isTeacher = user.isTeacher
             req.session.userId = user.id
-            req.session.centerId = user.centerId
 
             
             res.redirect("/");
@@ -423,14 +440,22 @@ app.post("/login", (req,res) =>{
 });
 
 app.get("/teacherHome", isAuth, (req,res) =>{
+    if(req.session.isTeacher == 1){
     res.sendFile(path.join(__dirname, "views/teacherHome.html"))
+    }else{
+        res.redirect("/")
+    }
 })
 
 app.get("/studentHome", isAuth, (req,res) =>{
+    if(req.session.isTeacher == 0){
     const idClase = req.query.idClase
     const idAlumno = req.query.idAlumno
 
     res.render("studentHome", {"idClase":idClase, "idAlumno":idAlumno}) 
+    }else{
+        res.redirect("/")
+    }
 })
 
 app.get("/reg", (req,res) =>{

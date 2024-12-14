@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html data-bs-theme="dark" lang="en">
 <head>
+    <link rel="manifest" href="/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
@@ -12,7 +13,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
 </head>
-<body>
+<body style="margin: 0; height: 100vh; width: 100vw; background-size: cover; background-repeat: no-repeat; background-position: center; background-image: url('/images/track2.jpg');">
+    <div style="width: 100%; height: 100%; position: absolute; top: 0; background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8262954840139181) 35%, rgba(0,0,0,0.6022058481595763) 63%, rgba(0,0,0,0) 100%); z-index: -1;"></div>    
+  
     <div style="background-color: #000161" class="rounded text-center m-3 p-3">
         <h1 style='font-family: "Plus Jakarta Sans", sans-serif; font-weight:bolder; font-size: 45px;'>Iniciar sesión</h1>
         <form action="/login" method="post">
@@ -21,6 +24,14 @@
             <input style="height: 50px; background-color: #003893;" class="w-100 btn my-1 shadow-sm" type="submit" value="Iniciar sesión">
         </form>
     </div>
+    <p class="mx-3 fs-5" style='font-family: "Plus Jakarta Sans", sans-serif; '>No tienes cuenta? <a class="link-opacity-50-hover" href="/reg">registro</a></p>
+    <script>
+        if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+        .then(() => console.log('Service Worker Registered'))
+        .catch(err => console.error('Service Worker Registration Failed:', err));
+}
 
+    </script>
 </body>
 </html>

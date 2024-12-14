@@ -10,17 +10,17 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+    <title><%= name %> - <%= pruebasDisplay %></title>
 </head>
 <body>
 <h1 class="mx-3 px-3 mt-3 pt-1 mb-0" style='font-family: "Plus Jakarta Sans", sans-serif; font-weight:500; font-size: 45px;'><%= name %></h1>
-<h3 class="mx-3 px-3" style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight:100; font-size: 25px; width: auto;"><%= pruebasDisplay %></h3>
+<h3 class="mx-3 px-3" style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight:100; font-size: 25px; width: auto;"><%= pruebasDisplay %>:</h3>
     <div class="p-3">
         <p id="idClase" style="display: none;"><%= idClase %></p>
         <p id="idAlumno" style="display: none;"><%= idAlumno %></p>
 
         <div id="container1">    
-            <div style="background-color: #000161" onclick="joinClass()" class="rounded m-1 px-4 p-3 row mb-3 ps-1 hover">
+            <div style="background-color: #000161; cursor: pointer;" onclick="joinClass()" class="rounded m-1 px-4 p-3 row mb-3 ps-1">
                 <div onclick="" class="col">
                     <h1 style='font-family: "Plus Jakarta Sans", sans-serif; font-weight:bolder; font-size: 30px; width: fit-content;'>Añadir prueba</h1>
                     <h5 style='font-family: "Plus Jakarta Sans", sans-serif; font-weight: 200; width: fit-content;'>Añadir una nueva prueba</h5>

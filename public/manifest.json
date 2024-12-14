@@ -1,0 +1,21 @@
+{
+    "name": "AtleticTracker",
+    "short_name": "AthTrack",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#212529",
+    "theme_color": "#000161",
+    "icons": [
+      {
+        "src": "icons/logo192.webp",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "icons/logo512.webp",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
+  
