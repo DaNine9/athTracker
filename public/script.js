@@ -20,6 +20,7 @@ fetch("/getUserData")
             nombre = user.name.split(" ")[0];
             username = user.username;
             center = user.center;
+            id = user.id
 
             //poner el nombre
             nameDisplay.innerText = nombre

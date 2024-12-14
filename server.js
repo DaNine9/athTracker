@@ -3,8 +3,8 @@ const sqlite3 = require("sqlite3").verbose();
 const session = require("express-session");
 const bodyParser = require("body-parser");
 const path = require("path");
-const { error } = require("console");
-const ejs = require("ejs")
+const ejs = require("ejs");
+
 
 const app = express();
 const port = 3000;
@@ -70,6 +70,26 @@ function checkCodigos(code){
     })
 }
 
+function getNameOnId(id){
+    const query = `SELECT name FROM users WHERE id = ${id}` 
+    db.all(query, (err, data) => {
+        if (data){
+            console.log(data)
+            return data;
+        }
+    })
+}
+
+function getClassNameOnCode(code){
+    const query = `SELECT name FROM classes WHERE code = "${code}"` 
+    db.all(query, (err, data) => {
+        if (data){
+            console.log(data)
+            return data;
+        }
+    })
+}
+
 //middleware autentificacion
 function isAuth(req, res, next){
     if(req.session.userId){
@@ -112,8 +132,39 @@ app.get("/detalleAlumno", isAuth, (req, res) => {
     const idClase = req.query.idClase
     const idAlumno = req.query.idAlumno
 
-    res.render("detalleAlumno", {"idClase":idClase, "idAlumno":idAlumno})
+    var Fname = "Fname";
+    if (req.session.isTeacher === 1) {
 
+    var query = `SELECT name FROM users WHERE id = ${idAlumno}`
+    db.get(query, (err, data) =>{
+        if(data){
+            Fname = data
+            var Pname = Fname.name
+            console.log(Pname)
+            res.render("detalleAlumno", {"idClase":idClase, "idAlumno":idAlumno, "name":Pname, "pruebasDisplay":"Pruebas del alumno:"})
+        }
+        if(err){
+            console.log(err)
+        }
+    })
+
+    } else if (req.session.isTeacher === 0) {
+
+        const query = `SELECT name FROM classes WHERE code = "${idClase}"` 
+        db.get(query, (err, data) => {
+            if (data){
+                console.log("data:", data)
+                Fname = data
+                var Pname = Fname.name
+                console.log("Pname:",Pname)
+                res.render("detalleAlumno", {"idClase":idClase, "idAlumno":idAlumno, "name":Pname, "pruebasDisplay":"Mis Pruebas:"})
+            }
+        })
+
+
+    } else {
+        return res.status(400).send("Invalid user role");
+    }
 })
 
 
@@ -154,7 +205,7 @@ app.post("/joinClass", isAuth,(req,res) => {
     });
 })
 
-app.get("/class", isAuth, (req,res) => {
+app.get("/class", (req,res) => {
 
     var code = req.query.code;
     classcode = code
@@ -267,20 +318,24 @@ app.get("/getClassData", isAuth,(req,res) => {
 
 })
 
-app.get("/dataAlumno", isAuth, (req,res) => {
-    var idAlumno = req.body.idAlumno
-    var idClase = req.body.idClase
+app.get("/dataAlumno", (req,res) => {
 
-    var query = `SELECT * FROM resultados WHERE idAlumno = ${idAlumno} AND idClase = ${idClase} order by createdOn desc;`
+    var idAlumno = req.query.idAlumno
+
+    var idClase = req.query.idClase
+
+
+    var query = `SELECT * FROM resultados WHERE idAlumno = ${idAlumno} AND idClase = "${idClase}" order by createdOn desc;`
+    console.log(query)
     db.all(query, (err, data) => {
         if(err){
-            console.log("error al consultar los resultados")
+            console.log("error al consultar los resultados:", err)
         }
         
         if(data){
-            res.json(data)
+            console.log(data)
         }else{
-            res.send("no hay datos")
+            res.status(500)
         }
     })
 })
@@ -372,7 +427,10 @@ app.get("/teacherHome", isAuth, (req,res) =>{
 })
 
 app.get("/studentHome", isAuth, (req,res) =>{
-    res.sendFile(path.join(__dirname, "views/studentHome.html"))
+    const idClase = req.query.idClase
+    const idAlumno = req.query.idAlumno
+
+    res.render("studentHome", {"idClase":idClase, "idAlumno":idAlumno}) 
 })
 
 app.get("/reg", (req,res) =>{
@@ -382,5 +440,5 @@ app.get("/reg", (req,res) =>{
 
 
 app.listen(3000, ()=>{
-    console.log("todo ok")
+    console.log(`Server running on http://localhost:${port}`);
 })
