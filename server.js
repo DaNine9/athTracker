@@ -163,6 +163,8 @@ app.get("/detalleAlumno", isAuth, (req, res) => {
                     "name": Pname,
                     "pruebasDisplay": "Pruebas del alumno"
                 });
+            }else{
+                res.send('parece que esta clase no existe ¯\_(ツ)_/¯')
             }
             if (err) {
                 console.log(err);
@@ -185,6 +187,8 @@ app.get("/detalleAlumno", isAuth, (req, res) => {
                     "name": Pname, 
                     "pruebasDisplay": "Mis Pruebas"
                 });
+            }else{
+                res.send(`parece que esta clase no existe ¯\_(ツ)_/¯`)
             }
 });
 
