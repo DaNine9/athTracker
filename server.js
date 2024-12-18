@@ -11,9 +11,9 @@ const port = 3000;
 app.set("view engine", "ejs")
 
 
-var classcode="";
-var classname="";
-var idAlumno="";
+var classcode = "";
+var classname = "";
+var idAlumno = "";
 
 //cambio
 
@@ -21,39 +21,39 @@ var idAlumno="";
 app.use(express.static(path.join(__dirname, "/public")));
 
 //bodyparser
-app.use(bodyParser.urlencoded({extended:true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 //sesión (cookie)
 app.use(session({
-    secret:"~#€#==2e32",
-    resave:false,
-    saveUninitialized:true
+    secret: "~#€#==2e32",
+    resave: false,
+    saveUninitialized: true
 }))
 
 //base de datos
 app.use(express.static(path.join(__dirname, "/public")));
-const db = new sqlite3.Database("bi.db", (err) =>{
-    if(err){
+const db = new sqlite3.Database("bi.db", (err) => {
+    if (err) {
         console.error("ha habido un error al conectar a la base de datos");
-    }else{
+    } else {
         console.log("conectado");
     }
 })
 
 // crear codigos
-function crearCodigo(){
+function crearCodigo() {
     codigo = ""
-    function generarGrupo(){
+    function generarGrupo() {
         var grupo = ""
         const abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        for(var i = 0; i<3; i++){
-            grupo+= abc.charAt(Math.floor(Math.random()*abc.length))
+        for (var i = 0; i < 3; i++) {
+            grupo += abc.charAt(Math.floor(Math.random() * abc.length))
         }
         return grupo;
     }
     codigo = `${generarGrupo()}-${generarGrupo()}-${generarGrupo()}`
-    while(checkCodigos(codigo)){
+    while (checkCodigos(codigo)) {
         codigo = `${generarGrupo()}-${generarGrupo()}-${generarGrupo()}`
     }
     return codigo
@@ -74,31 +74,31 @@ function checkEmptyFields(username, password, isTeacher, fname) {
     }
 }
 
-function checkCodigos(code){
-    var query = "SELECT code FROM clases WHERE code = \""+ code + "\";"
+function checkCodigos(code) {
+    var query = "SELECT code FROM clases WHERE code = \"" + code + "\";"
     db.all(query, (err, data) => {
-        if (data){
+        if (data) {
             return true;
-        }else{
+        } else {
             return false;
         }
     })
 }
 
-function getNameOnId(id){
-    const query = `SELECT name FROM users WHERE id = ${id}` 
+function getNameOnId(id) {
+    const query = `SELECT name FROM users WHERE id = ${id}`
     db.all(query, (err, data) => {
-        if (data){
+        if (data) {
             console.log(data)
             return data;
         }
     })
 }
 
-function getClassNameOnCode(code){
-    const query = `SELECT name FROM classes WHERE code = "${code}"` 
+function getClassNameOnCode(code) {
+    const query = `SELECT name FROM classes WHERE code = "${code}"`
     db.all(query, (err, data) => {
-        if (data){
+        if (data) {
             console.log(data)
             return data;
         }
@@ -106,16 +106,16 @@ function getClassNameOnCode(code){
 }
 
 //middleware autentificacion
-function isAuth(req, res, next){
-    if(req.session.userId){
+function isAuth(req, res, next) {
+    if (req.session.userId) {
         next();
-    }else{
+    } else {
         res.redirect("/");
     }
 }
 
-app.get("/getName", isAuth , (req, res) => {
-    res.json({"name":req.session.username})
+app.get("/getName", isAuth, (req, res) => {
+    res.json({ "name": req.session.username })
 })
 
 app.get("/", (req, res) => {
@@ -132,7 +132,7 @@ app.get("/", (req, res) => {
     }
 });
 
-app.get("/alumno", isAuth, (req,res) => {
+app.get("/alumno", isAuth, (req, res) => {
 
     const id = req.query.id
     alumnoId = id
@@ -163,14 +163,14 @@ app.get("/detalleAlumno", isAuth, (req, res) => {
                     "name": Pname,
                     "pruebasDisplay": "Pruebas del alumno"
                 });
-            }else{
+            } else {
                 res.send('parece que esta clase no existe ¯\_(ツ)_/¯')
             }
             if (err) {
                 console.log(err);
             }
         });
-        
+
 
     } else if (req.session.isTeacher === 0) {
 
@@ -182,15 +182,15 @@ app.get("/detalleAlumno", isAuth, (req, res) => {
                 var Pname = Fname.name;
                 console.log("Pname:", Pname);
                 res.render("detalleAlumno", {
-                    "idClase": idClase, 
-                    "idAlumno": idAlumno, 
-                    "name": Pname, 
+                    "idClase": idClase,
+                    "idAlumno": idAlumno,
+                    "name": Pname,
                     "pruebasDisplay": "Mis Pruebas"
                 });
-            }else{
+            } else {
                 res.send(`parece que esta clase no existe ¯\_(ツ)_/¯`)
             }
-});
+        });
 
 
     } else {
@@ -200,7 +200,7 @@ app.get("/detalleAlumno", isAuth, (req, res) => {
 
 
 //unirse a clase
-app.post("/joinClass", isAuth,(req,res) => {
+app.post("/joinClass", isAuth, (req, res) => {
 
     //codigo de clase
     var code = req.body.classCode
@@ -212,8 +212,8 @@ app.post("/joinClass", isAuth,(req,res) => {
 
     //ejecutar el query, y si existe la clase con el código dado, añadir al usuario a enrollments con su UID y la classId
     db.get(query, (err, data) => {
-        if (data){
-            console.log("hay datos:",data)
+        if (data) {
+            console.log("hay datos:", data)
 
             //id de la clase
             var classId = data.id
@@ -230,47 +230,96 @@ app.post("/joinClass", isAuth,(req,res) => {
 
 
             res.redirect("/");
-        }else{
+        } else {
             console.log("ERROR: NO HAY UNA CLASE CON ESTE CÓDIGO")
         }
     });
 })
 
-app.get("/class", (req,res) => {
+app.get("/class", (req, res) => {
 
     var code = req.query.code;
     classcode = code
     console.log(code);
 
-    if(req.session.isTeacher == 1){
-        res.render("classTeacher", {"idClase":code});
-    }else{
-        res.sendFile(path.join(__dirname, "views/detailAlumno.html"));   
+    if (req.session.isTeacher == 1) {
+        res.render("classTeacher", { "idClase": code });
+    } else {
+        res.sendFile(path.join(__dirname, "views/detailAlumno.html"));
     }
 })
 
 //prueba
-app.get("/prueba", isAuth, (req,res) => {
+app.get("/prueba", isAuth, (req, res) => {
 
     var id = req.query.id
 
 })
 
-app.get("/getMasterPruebas", isAuth, (req,res) => {
+app.get("/getMasterPruebas", isAuth, (req, res) => {
     var query = "SELECT * FROM pruebasMaster;"
-    db.all(query, (err,data) => {
-        if(err){
+    db.all(query, (err, data) => {
+        if (err) {
             console.log("error al coger pruebasMaster")
         }
 
-        if(data){
+        if (data) {
             res.json(data);
         }
     })
 })
 
+app.post("/addPruebaAlumno", isAuth, (req, res) => {
+
+    var idPrueba = req.body.prueba
+    var idAlumno = req.body.idAlumno
+
+    var query = 'SELECT * FROM pruebasAlumnos WHERE idPrueba = ? AND idAlumno= ;'
+    db.all(query, [idPrueba, idAlumno], (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+
+        if (!data) {
+            var query1 = 'INSERT INTO pruebasAlumnos (idPrueba, idAlumno) VALUES (?, ?);'
+
+            db.run(query1, [idPrueba, idAlumno], (err) => {
+                if (err) {
+                    console.log(err)
+                }
+            })
+            res.send("OK")
+        }else{
+            res.send("ESTA PRUEBA YA EXISTE")
+        }
+    })
+
+})
+
+
+app.get("/getPruebasAlumno", isAuth, (req, res) => {
+
+    
+    var idAlumno = req.query.idAlumno
+    console.log("llamada" + idAlumno)
+
+    var query = 'SELECT name,type,pa.id as "idPruebasAlumnos", mp.id as "idMasterPruebas" FROM pruebasAlumnos pa LEFT JOIN pruebasMaster mp ON pa.idPrueba = mp.id WHERE pa.idAlumno = ?;'
+    db.all(query, [idAlumno], (err, data)=>{
+        if(err){
+            console.log(err)
+        }
+
+        if(data){
+            res.json(data)
+        }else{
+            res.send("error")
+        }
+    })
+
+})
+
 //crear nueva clase
-app.post("/newClass", isAuth,(req, res) => {
+app.post("/newClass", isAuth, (req, res) => {
     console.log(req.body.ndci)
 
 
@@ -301,10 +350,10 @@ app.post("/newClass", isAuth,(req, res) => {
 
 
 //getClasses funciona con profesores y alumnos, si es profe, coge de la tabla classes segun el id de profe y si es alumno, coge de la tabla classes segun enrollments
-app.get("/getClasses", isAuth,(req, res) => {
+app.get("/getClasses", isAuth, (req, res) => {
 
     //si es 1 profesor
-    if(req.session.isTeacher == 1){
+    if (req.session.isTeacher == 1) {
         var query = `SELECT * FROM classes WHERE teacherId = ?;`;
         console.log(query);
         db.all(query, [req.session.userId], (error, data) => {
@@ -315,8 +364,8 @@ app.get("/getClasses", isAuth,(req, res) => {
             res.json(data);
         });
 
-    //si es 0 es alumno
-    }else if(req.session.isTeacher == 0){
+        //si es 0 es alumno
+    } else if (req.session.isTeacher == 0) {
 
         const query = `SELECT c.*, u.name AS teacherName FROM classes c JOIN enrollments e ON c.id = e.classId JOIN users u ON c.teacherId = u.id WHERE e.studentId = ?;`;
         db.all(query, [req.session.userId], (error, data) => {
@@ -326,15 +375,15 @@ app.get("/getClasses", isAuth,(req, res) => {
             } else {
                 res.json(data);
             }
-});
+        });
 
 
     }
 
-    
+
 })
 
-app.get("/getClassData", isAuth,(req,res) => {
+app.get("/getClassData", isAuth, (req, res) => {
     var query = `SELECT u.id as "UID", u.name as "FNAME", c.name as "CLASSNAME", c.code as "CLASSCODE"  FROM enrollments  INNER JOIN classes as c on classId = c.id  INNER JOIN users as u on studentId = u.id  WHERE code = ?;`;
     console.log(query);
     db.all(query, [classcode], (error, data) => {
@@ -343,12 +392,12 @@ app.get("/getClassData", isAuth,(req,res) => {
         }
         classname = data.CLASSNAME;
         res.json(data);
-});
+    });
 
 
 })
 
-app.get("/dataAlumno", (req,res) => {
+app.get("/dataAlumno", (req, res) => {
 
     var idAlumno = req.query.idAlumno
 
@@ -371,45 +420,45 @@ app.get("/dataAlumno", (req,res) => {
 
 })
 
-app.post("/newUser", (req,res) =>{
+app.post("/newUser", (req, res) => {
 
     var username = req.body.user;
     var password = req.body.password;
     var isTeacher = req.body.isTeacher;
     var fname = req.body.fname;
 
-    if(checkEmptyFields(username, password, isTeacher, fname) == null){
-        
+    if (checkEmptyFields(username, password, isTeacher, fname) == null) {
+
         var query = `INSERT INTO users (username, password, isTeacher, name) VALUES ("${username}", "${password}", ${isTeacher}, "${fname}");`
-        
+
         console.log(query);
-        
+
         db.get(query, (err, data) => {
-            if (err){
+            if (err) {
                 res.send("fallo")
                 console.log(err);
-            }else{
+            } else {
                 console.log("user añadido correctamente");
                 res.redirect("/");
             }
         });
 
-    }else{
+    } else {
         res.send("<h1 style='font-size:100px;'>" + checkEmptyFields(username, password, isTeacher, fname) + "</h1>");
     }
 
-    
-    
+
+
 });
 
-app.get("/getUserData", (req,res) =>{
+app.get("/getUserData", (req, res) => {
     var query = `SELECT * FROM users WHERE id = "${req.session.userId}";`
     console.log(query);
     db.all(query, (err, data) => {
         console.log(data);
-        if (data){
+        if (data) {
             res.json(data);
-        }else{
+        } else {
             console.log(err)
         }
     });
@@ -417,57 +466,57 @@ app.get("/getUserData", (req,res) =>{
 })
 
 
-app.get("/logout", (req,res) =>{
+app.get("/logout", (req, res) => {
     req.session.destroy();
     res.redirect("/");
 })
 
-app.post("/login", (req,res) =>{
+app.post("/login", (req, res) => {
     var username = req.body.user;
     var password = req.body.password;
     query = `SELECT * FROM users WHERE username = "${username}" AND password = "${password}";`
     console.log(query);
     db.get(query, (err, user) => {
         console.log(user);
-        if (user){
+        if (user) {
             req.session.username = user.username
             req.session.fname = user.fname
             req.session.isTeacher = user.isTeacher
             req.session.userId = user.id
 
-            
+
             res.redirect("/");
-        }else{
+        } else {
             res.status(401).redirect("/");
         }
     });
 });
 
-app.get("/teacherHome", isAuth, (req,res) =>{
-    if(req.session.isTeacher == 1){
-    res.sendFile(path.join(__dirname, "views/teacherHome.html"))
-    }else{
+app.get("/teacherHome", isAuth, (req, res) => {
+    if (req.session.isTeacher == 1) {
+        res.sendFile(path.join(__dirname, "views/teacherHome.html"))
+    } else {
         res.redirect("/")
     }
 })
 
-app.get("/studentHome", isAuth, (req,res) =>{
-    if(req.session.isTeacher == 0){
-    const idClase = req.query.idClase
-    const idAlumno = req.query.idAlumno
+app.get("/studentHome", isAuth, (req, res) => {
+    if (req.session.isTeacher == 0) {
+        const idClase = req.query.idClase
+        const idAlumno = req.query.idAlumno
 
-    res.render("studentHome", {"idClase":idClase, "idAlumno":idAlumno}) 
-    }else{
+        res.render("studentHome", { "idClase": idClase, "idAlumno": idAlumno })
+    } else {
         res.redirect("/")
     }
 })
 
-app.get("/reg", (req,res) =>{
+app.get("/reg", (req, res) => {
     res.sendFile(path.join(__dirname, "views/register.html"))
 })
 
 
 
-app.listen(3000, ()=>{
+app.listen(3000, () => {
     console.log(`Server running on http://localhost:${port}`);
 })
