@@ -271,24 +271,26 @@ app.get("/getMasterPruebas", isAuth, (req, res) => {
 
 app.post("/addPruebaAlumno", isAuth, (req, res) => {
 
+
     var idPrueba = req.body.prueba
     var idAlumno = req.body.idAlumno
+    var idClase = req.body.idClase
 
-    var query = 'SELECT * FROM pruebasAlumnos WHERE idPrueba = ? AND idAlumno= ;'
-    db.all(query, [idPrueba, idAlumno], (err, data) => {
+    var query = 'SELECT * FROM pruebasAlumnos WHERE idPrueba = ? AND idAlumno= ? AND idClase = ?;'
+    db.all(query, [idPrueba, idAlumno, idClase], (err, data) => {
         if (err) {
             console.log(err)
         }
+        
+        if (data.length == 0) {
+            var query1 = 'INSERT INTO pruebasAlumnos (idPrueba, idAlumno, idClase) VALUES (?, ?, ?);'
 
-        if (!data) {
-            var query1 = 'INSERT INTO pruebasAlumnos (idPrueba, idAlumno) VALUES (?, ?);'
-
-            db.run(query1, [idPrueba, idAlumno], (err) => {
+            db.run(query1, [idPrueba, idAlumno, idClase], (err) => {
                 if (err) {
                     console.log(err)
                 }
             })
-            res.send("OK")
+            res.redirect("/detalleAlumno?idAlumno="+idAlumno+"&idClase="+idClase)
         }else{
             res.send("ESTA PRUEBA YA EXISTE")
         }
@@ -298,13 +300,14 @@ app.post("/addPruebaAlumno", isAuth, (req, res) => {
 
 
 app.get("/getPruebasAlumno", isAuth, (req, res) => {
-
     
+    var idClase = req.query.idClase
     var idAlumno = req.query.idAlumno
+
     console.log("llamada" + idAlumno)
 
-    var query = 'SELECT name,type,pa.id as "idPruebasAlumnos", mp.id as "idMasterPruebas" FROM pruebasAlumnos pa LEFT JOIN pruebasMaster mp ON pa.idPrueba = mp.id WHERE pa.idAlumno = ?;'
-    db.all(query, [idAlumno], (err, data)=>{
+    var query = 'SELECT name,type,pa.id as "idPruebasAlumnos", mp.id as "idMasterPruebas" FROM pruebasAlumnos pa LEFT JOIN pruebasMaster mp ON pa.idPrueba = mp.id WHERE pa.idAlumno = ? AND pa.idClase = ?;'
+    db.all(query, [idAlumno, idClase], (err, data)=>{
         if(err){
             console.log(err)
         }
@@ -339,7 +342,7 @@ app.post("/newClass", isAuth, (req, res) => {
             return res.status(500).send("Error");
         }
         console.log("Class added successfully.");
-        res.redirect("/teacherHome")
+            res.redirect("/teacherHome")
     });
 });
 
