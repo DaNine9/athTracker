@@ -4,6 +4,7 @@ const session = require("express-session");
 const bodyParser = require("body-parser");
 const path = require("path");
 const ejs = require("ejs");
+const { error } = require("console");
 
 
 const app = express();
@@ -14,6 +15,10 @@ app.set("view engine", "ejs")
 var classcode = "";
 var classname = "";
 var idAlumno = "";
+var pruebasAlumnosId ="";
+var nombrePrueba = "";
+var tipoPrueba = "";
+
 
 //cambio
 
@@ -400,28 +405,6 @@ app.get("/getClassData", isAuth, (req, res) => {
 
 })
 
-app.get("/dataAlumno", (req, res) => {
-
-    var idAlumno = req.query.idAlumno
-
-    var idClase = req.query.idClase
-
-
-    var query = `SELECT * FROM resultados WHERE idAlumno = ? AND idClase = ? ORDER BY createdOn DESC;`;
-    console.log(query);
-    db.all(query, [idAlumno, idClase], (err, data) => {
-        if (err) {
-            console.log("error al consultar los resultados:", err);
-        }
-
-        if (data) {
-            console.log(data);
-        } else {
-            res.status(500);
-        }
-    });
-
-})
 
 app.post("/newUser", (req, res) => {
 
@@ -514,11 +497,52 @@ app.get("/studentHome", isAuth, (req, res) => {
     }
 })
 
-app.get("/reg", (req, res) => {
-    res.sendFile(path.join(__dirname, "views/register.html"))
+app.get("/detallePrueba",isAuth, (req,res) => {
+    pruebasAlumnosId = req.query.id
+    var query = `SELECT pruebasMaster.name, pruebasMaster.type  FROM pruebasAlumnos JOIN pruebasMaster ON pruebasAlumnos.idPrueba = pruebasMaster.id WHERE pruebasAlumnos.id = ?`
+    db.get(query, [pruebasAlumnosId], (error, data) => {
+        if(data){
+            nombrePrueba = data.name
+            tipoPrueba = data.type
+        }
+        res.render("detallePrueba", {
+            name: nombrePrueba
+        })
+    })
 })
 
+app.post("/addResultado", isAuth, (req,res) => {
+    var data = req.body.resultado
+    var query = 'INSERT INTO resultados (idPruebasAlumnos, resultado) VALUES (?, ?)'
+    db.run(query,[pruebasAlumnosId, data], (err)=>{
+        if(err){
+            console.log(err)
+        }else{
+            res.redirect("/detallePrueba?id="+pruebasAlumnosId)
+        }
+    })
+})
 
+app.get("/getResultadosPrueba", (req, res) => {
+    var query = "SELECT * FROM resultados WHERE idPruebasAlumnos = ?"
+    db.all(query,[pruebasAlumnosId],(err,data)=>{
+        if(err){
+            console.log(err)
+        }
+
+        if(data){
+            res.json(data)
+        }
+    })
+})
+
+app.get("/reg", (req, res) => {
+    res.render(path.join(__dirname, "register.html"))
+})
+
+app.get("/getPruebaData", (req, res) => {
+    var query = ``
+})
 
 app.listen(3000, () => {
     console.log(`Server running on http://localhost:${port}`);

@@ -8,12 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log(idClase, idAlumno)
 
-    fetch(`/dataAlumno?idAlumno=${idAlumno}&idClase=${idClase}`)
-    .then(response => response.json())
-    .then(data =>{
-        console.log(data)
-    })
-
     var contenedorPruebas = document.getElementById("contenedorPruebas")
 
     fetch("/getPruebasAlumno?idAlumno=" + idAlumno + "&idClase=" + idClase)
@@ -21,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(pruebas => {
         console.log(pruebas)
         pruebas.forEach(prueba => {
-            contenedorPruebas.innerHTML += `<div style="background-color: #000161" class="rounded m-1 p-3 row mb-3 ps-1 hover"><a href="/detallePrueba?id=${}">
+            contenedorPruebas.innerHTML += `<div style="background-color: #000161" class="rounded m-1 p-3 row mb-3 ps-1 hover"><a href="/detallePrueba?id=${prueba.idPruebasAlumnos}">
                 <h1 style="font-family: &quot;Plus Jakarta Sans&quot;, sans-serif; font-weight:bolder; font-size: 30px; width: fit-content;" class="col">${prueba.name}</h1>
                 </a>
                 </div>`
