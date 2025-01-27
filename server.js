@@ -523,6 +523,30 @@ app.post("/addResultado", isAuth, (req,res) => {
     })
 })
 
+app.post("/addMeta", (req, res) => {
+    var meta = req.body.meta
+    var query = 'SELECT * FROM pruebasAlumnos WHERE id = ?'
+    db.get(query, [pruebasAlumnosId], (err, data) => {
+        if(data){
+            //cambiar meta
+            var query1 = 'INSERT INTO pruebasAlumnos (meta) VALUES (?) WHERE id = ?'
+            db.run(query1, [meta, pruebasAlumnosId], (err) => {
+                if(err){
+                    console.log(err)
+                }
+            })
+        }else{
+            //añadir meta
+            var query2 = 'INSERT INTO pruebasAlumnos'
+            db.run(query2, [meta], (err) => {
+                if(err){
+                    console.log(err)
+                }
+            })
+        }
+    }) 
+})
+
 app.get("/getResultadosPrueba", (req, res) => {
     var query = "SELECT * FROM resultados WHERE idPruebasAlumnos = ?"
     db.all(query,[pruebasAlumnosId],(err,data)=>{

@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,8 +18,9 @@
 <body>
     <h1><%=name%></h1>
     <h2>Añadir Resultados:</h2>
-    <form action="/addResultado" method="post"><input type="number" step="0.01" name="resultado"><input type="submit" value="Añadir"></form>
-   
+    <form action="/addResultado" method="post"><input type="number" step="0.01" placeholder="Resultado" name="resultado"><input type="submit" value="Añadir"></form>
+
+    <form action="/addMeta" method="post"><input type="number" placeholder="Objetivo" step="0.01" name="meta"><input type="submit" value="Añadir"></form>   
     <div id="chart"></div>
     
     <script src="detallePrueba.js"></script>
