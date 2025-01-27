@@ -529,26 +529,19 @@ app.post("/addMeta", (req, res) => {
     db.get(query, [pruebasAlumnosId], (err, data) => {
         if(data){
             //cambiar meta
-            var query1 = 'INSERT INTO pruebasAlumnos (meta) VALUES (?) WHERE id = ?'
+            var query1 = 'UPDATE pruebasAlumnos SET meta = ? WHERE id = ?'
             db.run(query1, [meta, pruebasAlumnosId], (err) => {
                 if(err){
                     console.log(err)
                 }
             })
-        }else{
-            //añadir meta
-            var query2 = 'INSERT INTO pruebasAlumnos'
-            db.run(query2, [meta], (err) => {
-                if(err){
-                    console.log(err)
-                }
-            })
         }
-    }) 
+    })
+    res.redirect("/detallePrueba?id="+pruebasAlumnosId)
 })
 
 app.get("/getResultadosPrueba", (req, res) => {
-    var query = "SELECT * FROM resultados WHERE idPruebasAlumnos = ?"
+    var query = "SELECT  createdOn, resultado FROM resultados WHERE idPruebasAlumnos = ?"
     db.all(query,[pruebasAlumnosId],(err,data)=>{
         if(err){
             console.log(err)
