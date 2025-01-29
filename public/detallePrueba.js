@@ -1,4 +1,15 @@
 document.addEventListener("DOMContentLoaded", () => {
+
+    var metaValue
+    
+    fetch("/getMeta")
+    .then(response => response.json())
+    .then(data => {
+        console.log(data.meta)
+        metaValue = data.meta
+        
+    })
+
     fetch("/getResultadosPrueba")
     .then(result => result.json())
     .then(data => {
@@ -24,11 +35,22 @@ document.addEventListener("DOMContentLoaded", () => {
                     borderWidth:2,
                     fill:true,
                     tension:0.3,
-                    backgroundColor:gradient
+                    backgroundColor:"transparent"
+                },
+                {
+                    // Adding a horizontal line at the meta value
+                    label: "Objetivo",
+                    data: new Array(values.length).fill(metaValue), // Create an array of the same meta value
+                    borderColor: "#999999", // Set the color of the line
+                    pointRadius:0,
+                    borderWidth: 2,
+                    borderDash: [5, 5], // Optional: make the line dashed
+                    fill: false
                 }]
             },
             options:{
                 responsive:true,
+                aspectRatio:1,
                 scales:{
                     x:{
                         grid:{

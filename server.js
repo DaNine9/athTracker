@@ -460,9 +460,9 @@ app.get("/logout", (req, res) => {
 app.post("/login", (req, res) => {
     var username = req.body.user;
     var password = req.body.password;
-    query = `SELECT * FROM users WHERE username = "${username}" AND password = "${password}";`
+    query = `SELECT * FROM users WHERE username = ? AND password = ?;`
     console.log(query);
-    db.get(query, (err, user) => {
+    db.get(query, [username, password] ,(err, user) => {
         console.log(user);
         if (user) {
             req.session.username = user.username
@@ -538,6 +538,20 @@ app.post("/addMeta", (req, res) => {
         }
     })
     res.redirect("/detallePrueba?id="+pruebasAlumnosId)
+})
+
+app.get("/getMeta", (req,res) => {
+    var query = "SELECT meta FROM pruebasAlumnos WHERE id = ?"
+    db.get(query, [pruebasAlumnosId], (err, data) =>{
+        if(err){
+            console.log(err)
+        }
+
+        if(data){
+            res.send(data)
+        }
+
+    })
 })
 
 app.get("/getResultadosPrueba", (req, res) => {
